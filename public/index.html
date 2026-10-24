@@ -48,7 +48,7 @@
   .grp-A header { background: #d62828; } .grp-B header { background: #264653; } .grp-C header { background: #2a9d8f; color: #06231f; }
   .grp-D header { background: #e76f51; } .grp-E header { background: #7b2cbf; } .grp-F header { background: #0077b6; }
   .grp-G header { background: #606c38; } .grp-H header { background: #6c584c; }
-  .reveal { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
+  .reveal { display: grid; gap: 10px; }
   .reveal .card { border-width: 3px; }
   .reveal .card.win { border-color: var(--good); box-shadow: 0 0 0 3px #4ade8088; }
   .reveal .card.tie { border-color: var(--accent); }
@@ -60,6 +60,18 @@
   ul.plist { list-style: none; padding: 0; margin: 10px 0; }
   ul.plist li { padding: 9px 12px; background: #0f1a33; border-radius: 8px; margin-bottom: 6px; display: flex; justify-content: space-between; }
   .small { font-size: 13px; color: var(--muted); }
+  .pic { display: block; width: 100%; height: auto; filter: drop-shadow(0 4px 10px #0009); }
+  .mycard { max-width: 380px; margin: 0 auto; }
+  .opts { background: var(--card); color: var(--card-ink); border-radius: 12px; margin-top: 12px; overflow: hidden; border: 3px solid #2a2a2a; }
+  .opts .hint { background: var(--accent); color: #231a00; font-weight: 700; text-align: center; padding: 8px; font-size: 14px; }
+  .item { text-align: center; }
+  .item .who { font-size: 13px; font-weight: 700; margin-bottom: 6px; color: var(--muted); }
+  .item .pill { margin-top: 8px; background: #0f1a33; border-radius: 10px; padding: 6px 4px; }
+  .item .pill small { display: block; font-size: 11px; color: var(--muted); }
+  .item .pill b { font-size: 22px; font-variant-numeric: tabular-nums; }
+  .item.win .pic { filter: drop-shadow(0 0 3px #4ade80) drop-shadow(0 0 10px #4ade80); }
+  .item.win .pill { background: #14532d; }
+  .item.tie .pic { filter: drop-shadow(0 0 3px #fcbf49) drop-shadow(0 0 10px #fcbf49); }
   .trophy { font-size: 64px; text-align: center; }
 </style>
 </head>
@@ -105,13 +117,17 @@ function connect(onOpen) {
 }
 const send = (o) => ws && ws.readyState === 1 && ws.send(JSON.stringify(o));
 
-function cardHTML(c, { pick = false, hl = null } = {}) {
-  const rows = ATTRS.map((a) => {
-    const cls = 'attr' + (pick ? ' pick' : '') + (hl === a.key ? ' hl' : '');
-    const inner = `<span>${a.label}</span><b>${fmt(a.key, c[a.key])}</b>`;
-    return pick ? `<button class="${cls}" data-attr="${a.key}">${inner}</button>` : `<div class="${cls}">${inner}</div>`;
-  }).join('');
-  return `<div class="card grp-${c.code[0]}"><header><span>${c.code[0]}</span><span>SUPER AMIGOS</span><span>${c.code[1]}</span></header><h2>${esc(c.name)}</h2>${rows}</div>`;
+const picHTML = (c) => `<img class="pic" src="/cards/${c.code}.webp" alt="${esc(c.name)}" decoding="async">`;
+
+function optsHTML(c) {
+  const rows = ATTRS.map((a) => `<button class="attr pick" data-attr="${a.key}"><span>${a.label}</span><b>${fmt(a.key, c[a.key])}</b></button>`).join('');
+  return `<div class="opts"><div class="hint">Tocá el atributo que querés jugar</div>${rows}</div>`;
+}
+
+// precarga de los 32 naipes para que no haya esperas entre rondas
+function preload() {
+  if (window.__pre) return; window.__pre = true;
+  for (const g of 'ABCDEFGH') for (const n of '1234') new Image().src = `/cards/${g}${n}.webp`;
 }
 
 function chips() {
@@ -170,25 +186,26 @@ function renderLobby() {
 }
 
 function renderGame() {
+  preload();
   const mine = state.turn === state.you;
   let body = '';
   if (state.phase === 'choose') {
     const banner = mine
       ? `<div class="banner mine">Es tu turno: elegí un atributo</div>`
       : `<div class="banner">Elige ${esc(nameOf(state.turn))}…</div>`;
-    const card = state.myCard ? cardHTML(state.myCard, { pick: mine }) : `<div class="panel">Estás sin cartas.</div>`;
+    const card = state.myCard ? `<div class="mycard">${picHTML(state.myCard)}${mine ? optsHTML(state.myCard) : ''}</div>` : `<div class="panel">Estás sin cartas.</div>`;
     body = banner + card + (state.pot ? `<p class="small" style="text-align:center">Pozo por empate: ${state.pot} cartas</p>` : '');
   } else {
     const l = state.last;
     const attrLabel = ATTRS.find((a) => a.key === l.attr).label;
     const cards = l.cards.map((t) => {
       const cls = l.winnerId === t.id ? 'win' : (l.tie && l.tiedIds.includes(t.id) ? 'tie' : '');
-      return `<div class="card grp-${t.card.code[0]} ${cls}"><div class="who">${esc(nameOf(t.id))}${t.id === state.you ? ' (vos)' : ''}</div><h2>${esc(t.card.name)}</h2><div class="big"><small>${attrLabel}</small>${fmt(l.attr, t.card[l.attr])}</div></div>`;
+      return `<div class="item ${cls}"><div class="who">${esc(nameOf(t.id))}${t.id === state.you ? ' (vos)' : ''}</div>${picHTML(t.card)}<div class="pill"><small>${attrLabel}</small><b>${fmt(l.attr, t.card[l.attr])}</b></div></div>`;
     }).join('');
     const msg = l.tie
       ? `¡Empate! Las ${state.pot} cartas quedan en el pozo.`
       : `Gana ${esc(nameOf(l.winnerId))} y se lleva ${l.gained} carta${l.gained === 1 ? '' : 's'}.`;
-    body = `<div class="banner">${esc(nameOf(state.turn))} eligió ${attrLabel}</div><div class="reveal">${cards}</div><div class="result">${msg}</div><button id="next">Siguiente</button>`;
+    body = `<div class="banner">${esc(nameOf(state.turn))} eligió ${attrLabel}</div><div class="reveal" style="grid-template-columns:repeat(${l.cards.length},1fr)">${cards}</div><div class="result">${msg}</div><button id="next">Siguiente</button>`;
   }
   app.innerHTML = chips() + body;
   document.querySelectorAll('[data-attr]').forEach((b) => b.onclick = () => send({ t: 'pick', attr: b.dataset.attr }));

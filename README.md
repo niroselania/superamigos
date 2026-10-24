@@ -23,6 +23,9 @@ docker compose up -d --build
 ```
 Para jugar online hay que publicar el puerto 3000 detrás de un proxy inverso con HTTPS (el juego usa WebSocket en `/ws`; si usás Nginx Proxy Manager, activá "Websockets Support").
 
+## Imágenes
+Cada naipe es la foto real en `public/cards/` (un `.webp` por código, `A1.webp` … `H4.webp`). Son fotos de tus cartas físicas: usalas en tu red privada. Si vas a publicar el juego abierto en internet, tené en cuenta que los dibujos son de DC Comics.
+
 ## Datos
 Las cartas están en `data/cards.json` (código A1–H4, nombre y 5 atributos). Si algún número no coincide con tu carta, se corrige ahí y se reinicia.
 

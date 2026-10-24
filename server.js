@@ -149,7 +149,7 @@ function broadcast(room) {
 
 // ---------- servidor ----------
 const app = express();
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'public'), { maxAge: '7d' }));
 app.get('/health', (_req, res) => res.json({ ok: true, rooms: rooms.size }));
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server, path: '/ws' });
