@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Super Amigos</title>
+<style>
+  :root {
+    --bg: #14213d; --panel: #1d2d50; --ink: #f4f1e8; --muted: #9fb0d0;
+    --accent: #fcbf49; --good: #4ade80; --bad: #f87171; --card: #f6efd9; --card-ink: #1b1b1b;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--ink); font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  body { min-height: 100vh; padding: max(14px, env(safe-area-inset-top)) 14px 24px; }
+  main { max-width: 520px; margin: 0 auto; }
+  h1 { font-size: 28px; margin: 8px 0 4px; letter-spacing: .5px; }
+  h1 span { color: var(--accent); }
+  p.sub { margin: 0 0 18px; color: var(--muted); }
+  .panel { background: var(--panel); border-radius: 14px; padding: 16px; margin-bottom: 14px; }
+  label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+  input { width: 100%; font-size: 18px; padding: 12px; border-radius: 10px; border: 2px solid #34477a; background: #0f1a33; color: var(--ink); }
+  input:focus { outline: none; border-color: var(--accent); }
+  button { font: inherit; font-weight: 700; border: 0; border-radius: 10px; padding: 13px 16px; background: var(--accent); color: #231a00; cursor: pointer; width: 100%; font-size: 17px; }
+  button.secondary { background: #34477a; color: var(--ink); }
+  button:disabled { opacity: .45; cursor: default; }
+  .row { display: flex; gap: 10px; }
+  .row > * { flex: 1; }
+  .stack > * + * { margin-top: 10px; }
+  .code { font-size: 44px; letter-spacing: 10px; font-weight: 800; text-align: center; color: var(--accent); margin: 6px 0; }
+  .err { color: var(--bad); min-height: 20px; margin: 6px 0 0; font-size: 14px; }
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .chip { background: var(--panel); border: 2px solid transparent; border-radius: 999px; padding: 6px 12px; font-size: 14px; display: flex; gap: 8px; align-items: center; }
+  .chip.turn { border-color: var(--accent); }
+  .chip.out { opacity: .4; text-decoration: line-through; }
+  .chip.off .dot { background: var(--bad); }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--good); }
+  .chip b { background: #0f1a33; border-radius: 999px; padding: 1px 8px; font-size: 13px; }
+  .banner { text-align: center; padding: 10px; border-radius: 10px; background: #0f1a33; margin-bottom: 12px; font-weight: 600; }
+  .banner.mine { background: var(--accent); color: #231a00; }
+  .card { background: var(--card); color: var(--card-ink); border-radius: 14px; overflow: hidden; border: 3px solid #2a2a2a; }
+  .card header { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; font-weight: 800; color: #fff; }
+  .card h2 { margin: 0; font-size: 22px; padding: 16px 12px 10px; text-align: center; text-transform: uppercase; letter-spacing: .5px; }
+  .attr { display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; border-top: 1px solid #00000022; font-size: 18px; width: 100%; background: transparent; color: inherit; border-radius: 0; text-align: left; font-weight: 500; }
+  .attr b { font-size: 20px; font-variant-numeric: tabular-nums; }
+  button.attr.pick { cursor: pointer; }
+  button.attr.pick:active, button.attr.pick:hover { background: #fcbf4966; }
+  .attr.hl { background: #fcbf49aa; font-weight: 700; }
+  .grp-A header { background: #d62828; } .grp-B header { background: #264653; } .grp-C header { background: #2a9d8f; color: #06231f; }
+  .grp-D header { background: #e76f51; } .grp-E header { background: #7b2cbf; } .grp-F header { background: #0077b6; }
+  .grp-G header { background: #606c38; } .grp-H header { background: #6c584c; }
+  .reveal { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
+  .reveal .card { border-width: 3px; }
+  .reveal .card.win { border-color: var(--good); box-shadow: 0 0 0 3px #4ade8088; }
+  .reveal .card.tie { border-color: var(--accent); }
+  .reveal .who { text-align: center; font-size: 13px; font-weight: 700; padding: 6px; background: #00000012; }
+  .reveal h2 { font-size: 16px; padding: 10px 6px 4px; }
+  .reveal .big { text-align: center; font-size: 26px; font-weight: 800; padding: 6px 0 10px; font-variant-numeric: tabular-nums; }
+  .reveal .big small { display: block; font-size: 12px; font-weight: 600; color: #555; }
+  .result { text-align: center; font-size: 19px; font-weight: 700; margin: 14px 0 10px; }
+  ul.plist { list-style: none; padding: 0; margin: 10px 0; }
+  ul.plist li { padding: 9px 12px; background: #0f1a33; border-radius: 8px; margin-bottom: 6px; display: flex; justify-content: space-between; }
+  .small { font-size: 13px; color: var(--muted); }
+  .trophy { font-size: 64px; text-align: center; }
+</style>
+</head>
+<body>
+<main id="app"></main>
+
+<script>
+const ATTRS = [
+  { key: 'altura', label: 'Altura m.' },
+  { key: 'peso', label: 'Peso Kg.' },
+  { key: 'fuerza', label: 'Fuerza Kg.' },
+  { key: 'peleas', label: 'Peleas Ganadas' },
+  { key: 'velocidad', label: 'Velocidad Km/h' },
+];
+const fmt = (key, v) => key === 'altura'
+  ? v.toFixed(2).replace('.', ',')
+  : v.toLocaleString('es-AR', { maximumFractionDigits: 1 });
+
+const app = document.getElementById('app');
+let ws, state = null, session = null, err = '', screen = 'home';
+const store = {
+  get() { try { return JSON.parse(localStorage.getItem('sa_session')); } catch { return null; } },
+  set(v) { try { localStorage.setItem('sa_session', JSON.stringify(v)); } catch {} },
+  clear() { try { localStorage.removeItem('sa_session'); } catch {} },
+  name() { try { return localStorage.getItem('sa_name') || ''; } catch { return ''; } },
+  setName(n) { try { localStorage.setItem('sa_name', n); } catch {} },
+};
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+function connect(onOpen) {
+  const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+  ws = new WebSocket(`${proto}://${location.host}/ws`);
+  ws.onopen = onOpen;
+  ws.onmessage = (e) => {
+    const m = JSON.parse(e.data);
+    if (m.t === 'joined') { session = { code: m.code, token: m.token }; store.set(session); history.replaceState(null, '', '?sala=' + m.code); }
+    else if (m.t === 'error') { err = m.msg; if (!state) { store.clear(); session = null; } render(); }
+    else if (m.t === 'state') { state = m; err = ''; render(); }
+  };
+  ws.onclose = () => {
+    if (session) setTimeout(() => connect(() => ws.send(JSON.stringify({ t: 'join', code: session.code, token: session.token }))), 1500);
+  };
+}
+const send = (o) => ws && ws.readyState === 1 && ws.send(JSON.stringify(o));
+
+function cardHTML(c, { pick = false, hl = null } = {}) {
+  const rows = ATTRS.map((a) => {
+    const cls = 'attr' + (pick ? ' pick' : '') + (hl === a.key ? ' hl' : '');
+    const inner = `<span>${a.label}</span><b>${fmt(a.key, c[a.key])}</b>`;
+    return pick ? `<button class="${cls}" data-attr="${a.key}">${inner}</button>` : `<div class="${cls}">${inner}</div>`;
+  }).join('');
+  return `<div class="card grp-${c.code[0]}"><header><span>${c.code[0]}</span><span>SUPER AMIGOS</span><span>${c.code[1]}</span></header><h2>${esc(c.name)}</h2>${rows}</div>`;
+}
+
+function chips() {
+  return `<div class="chips">` + state.players.map((p) =>
+    `<div class="chip${p.id === state.turn && state.phase !== 'lobby' && state.phase !== 'over' ? ' turn' : ''}${p.out ? ' out' : ''}${p.connected ? '' : ' off'}"><span class="dot"></span>${esc(p.name)}${p.id === state.you ? ' (vos)' : ''}<b>${p.count}</b></div>`
+  ).join('') + `</div>`;
+}
+const nameOf = (id) => { const p = state.players.find((q) => q.id === id); return p ? p.name : '?'; };
+
+function render() {
+  if (!state) return renderHome();
+  if (state.phase === 'lobby') return renderLobby();
+  if (state.phase === 'over') return renderOver();
+  return renderGame();
+}
+
+function renderHome() {
+  const urlCode = new URLSearchParams(location.search).get('sala') || '';
+  app.innerHTML = `
+    <h1>SUPER <span>AMIGOS</span></h1>
+    <p class="sub">Juego de cartas para 2 o 3 jugadores</p>
+    <div class="panel stack">
+      <div><label>Tu nombre</label><input id="name" maxlength="16" value="${esc(store.name())}" placeholder="Ej: Darlyn"></div>
+      <button id="create">Crear sala</button>
+    </div>
+    <div class="panel stack">
+      <div><label>Código de sala</label><input id="code" maxlength="4" value="${esc(urlCode.toUpperCase())}" placeholder="ABCD" style="text-transform:uppercase;letter-spacing:6px;text-align:center"></div>
+      <button id="join" class="secondary">Unirme</button>
+      <div class="err">${esc(err)}</div>
+    </div>`;
+  const name = () => { const n = document.getElementById('name').value.trim(); store.setName(n); return n; };
+  document.getElementById('create').onclick = () => { const n = name(); connect(() => send({ t: 'create', name: n })); };
+  document.getElementById('join').onclick = () => {
+    const n = name(); const c = document.getElementById('code').value.trim().toUpperCase();
+    if (!c) { err = 'Escribí el código de la sala.'; return renderHome(); }
+    connect(() => send({ t: 'join', code: c, name: n }));
+  };
+}
+
+function renderLobby() {
+  const isHost = state.host === state.you;
+  const link = location.origin + '/?sala=' + state.code;
+  app.innerHTML = `
+    <h1>SUPER <span>AMIGOS</span></h1>
+    <div class="panel">
+      <div class="small" style="text-align:center">Código de sala</div>
+      <div class="code">${esc(state.code)}</div>
+      <div class="small" style="text-align:center;word-break:break-all">${esc(link)}</div>
+      <ul class="plist">${state.players.map((p) => `<li><span>${esc(p.name)}${p.id === state.host ? ' ★' : ''}</span><span class="small">${p.connected ? 'conectado' : 'desconectado'}</span></li>`).join('')}</ul>
+      ${isHost ? `<button id="start" ${state.players.length < 2 ? 'disabled' : ''}>Repartir y empezar</button>` : `<div class="small" style="text-align:center">Esperando que el anfitrión empiece…</div>`}
+      <div class="err">${esc(err)}</div>
+    </div>
+    <button class="secondary" id="share">Copiar link</button>`;
+  const s = document.getElementById('start'); if (s) s.onclick = () => send({ t: 'start' });
+  document.getElementById('share').onclick = () => { navigator.clipboard && navigator.clipboard.writeText(link); };
+}
+
+function renderGame() {
+  const mine = state.turn === state.you;
+  let body = '';
+  if (state.phase === 'choose') {
+    const banner = mine
+      ? `<div class="banner mine">Es tu turno: elegí un atributo</div>`
+      : `<div class="banner">Elige ${esc(nameOf(state.turn))}…</div>`;
+    const card = state.myCard ? cardHTML(state.myCard, { pick: mine }) : `<div class="panel">Estás sin cartas.</div>`;
+    body = banner + card + (state.pot ? `<p class="small" style="text-align:center">Pozo por empate: ${state.pot} cartas</p>` : '');
+  } else {
+    const l = state.last;
+    const attrLabel = ATTRS.find((a) => a.key === l.attr).label;
+    const cards = l.cards.map((t) => {
+      const cls = l.winnerId === t.id ? 'win' : (l.tie && l.tiedIds.includes(t.id) ? 'tie' : '');
+      return `<div class="card grp-${t.card.code[0]} ${cls}"><div class="who">${esc(nameOf(t.id))}${t.id === state.you ? ' (vos)' : ''}</div><h2>${esc(t.card.name)}</h2><div class="big"><small>${attrLabel}</small>${fmt(l.attr, t.card[l.attr])}</div></div>`;
+    }).join('');
+    const msg = l.tie
+      ? `¡Empate! Las ${state.pot} cartas quedan en el pozo.`
+      : `Gana ${esc(nameOf(l.winnerId))} y se lleva ${l.gained} carta${l.gained === 1 ? '' : 's'}.`;
+    body = `<div class="banner">${esc(nameOf(state.turn))} eligió ${attrLabel}</div><div class="reveal">${cards}</div><div class="result">${msg}</div><button id="next">Siguiente</button>`;
+  }
+  app.innerHTML = chips() + body;
+  document.querySelectorAll('[data-attr]').forEach((b) => b.onclick = () => send({ t: 'pick', attr: b.dataset.attr }));
+  const n = document.getElementById('next'); if (n) n.onclick = () => send({ t: 'next' });
+}
+
+function renderOver() {
+  const iWon = state.winner === state.you;
+  const isHost = state.host === state.you;
+  app.innerHTML = `
+    ${chips()}
+    <div class="trophy">${iWon ? '🏆' : '🎴'}</div>
+    <div class="result">${state.winner ? (iWon ? '¡Ganaste la partida!' : `Ganó ${esc(nameOf(state.winner))}`) : 'Partida terminada'}</div>
+    ${isHost ? '<button id="again">Jugar de nuevo</button>' : '<div class="small" style="text-align:center">El anfitrión puede empezar otra partida.</div>'}
+    <div style="height:10px"></div><button class="secondary" id="exit">Salir</button>`;
+  const a = document.getElementById('again'); if (a) a.onclick = () => send({ t: 'again' });
+  document.getElementById('exit').onclick = () => { store.clear(); session = null; location.href = location.pathname; };
+}
+
+// reconexión automática si había una sesión guardada
+(function boot() {
+  const saved = store.get();
+  const urlCode = new URLSearchParams(location.search).get('sala');
+  if (saved && (!urlCode || urlCode.toUpperCase() === saved.code)) {
+    session = saved;
+    connect(() => send({ t: 'join', code: saved.code, token: saved.token }));
+  }
+  render();
+})();
+</script>
+</body>
+</html>

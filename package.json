@@ -1,0 +1,14 @@
+{
+  "name": "superamigos-cartas",
+  "version": "1.0.0",
+  "description": "Juego de cartas Super Amigos en red local u online (2 o 3 jugadores)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node test/play.test.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "ws": "^8.18.0"
+  }
+}

@@ -1,0 +1,7 @@
+services:
+  superamigos:
+    build: .
+    container_name: superamigos
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
