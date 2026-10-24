@@ -4,4 +4,4 @@ services:
     container_name: superamigos
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "3200:3000"
